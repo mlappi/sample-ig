@@ -23,15 +23,7 @@ jobs:
       - name: Build IG (download publisher + generate)
         uses: docker://hl7fhir/ig-publisher-base:latest
         with:
-          args: |
-            bash -lc '
-              set -euo pipefail
-              sed -i "s/\r$//" ./_genonce.sh || true
-              chmod +x ./_genonce.sh
-              mkdir -p input-cache
-              wget -q https://github.com/HL7/fhir-ig-publisher/releases/latest/download/publisher.jar -O input-cache/publisher.jar
-              ./_genonce.sh
-            '
+          args: bash -lc "set -euo pipefail; sed -i 's/\r$//' ./_genonce.sh || true; chmod +x ./_genonce.sh; mkdir -p input-cache; wget -q https://github.com/HL7/fhir-ig-publisher/releases/latest/download/publisher.jar -O input-cache/publisher.jar; ./_genonce.sh"
 
       - name: Verify output
         run: test -f output/index.html
