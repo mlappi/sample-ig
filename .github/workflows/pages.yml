@@ -20,24 +20,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update publisher.jar
+      - name: Build IG (update publisher + generate)
         uses: docker://hl7fhir/ig-publisher-base:latest
         with:
-          args: ./_updatePublisher.sh
-
-      - name: Build IG
-        uses: docker://hl7fhir/ig-publisher-base:latest
-        with:
-          args: ./_genonce.sh
+          args: bash -lc "chmod +x ./_updatePublisher.sh ./_genonce.sh && ./_updatePublisher.sh && ./_genonce.sh"
 
       - name: Verify output
-        run: |
-          test -f output/index.html
+        run: test -f output/index.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: output
+
 
   deploy:
     needs: build
