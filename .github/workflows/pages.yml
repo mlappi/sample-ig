@@ -23,7 +23,7 @@ jobs:
       - name: Build IG (update publisher + generate)
         uses: docker://hl7fhir/ig-publisher-base:latest
         with:
-          args: bash -lc "chmod +x ./_updatePublisher.sh ./_genonce.sh && ./_updatePublisher.sh && ./_genonce.sh"
+          args: bash -lc "set -euo pipefail; chmod +x ./_updatePublisher.sh ./_genonce.sh; yes | ./_updatePublisher.sh; ./_genonce.sh"
 
       - name: Verify output
         run: test -f output/index.html
@@ -32,7 +32,6 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: output
-
 
   deploy:
     needs: build
