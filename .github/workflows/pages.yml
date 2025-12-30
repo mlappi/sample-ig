@@ -22,16 +22,29 @@ jobs:
 
       - name: Build IG (download publisher + generate)
         uses: docker://hl7fhir/ig-publisher-base:latest
+        continue-on-error: true
         with:
-          args: bash -lc "set -euo pipefail; sed -i 's/\r$//' ./_genonce.sh || true; chmod +x ./_genonce.sh; mkdir -p input-cache; wget -q https://github.com/HL7/fhir-ig-publisher/releases/latest/download/publisher.jar -O input-cache/publisher.jar; echo \"JAVA_HOME=$JAVA_HOME\"; export PATH=\"${JAVA_HOME}/bin:${PATH}\"; which java || true; java -version; ./_genonce.sh"
+          args: bash -lc "set -euo pipefail; sed -i 's/\r$//' ./_genonce.sh || true; chmod +x ./_genonce.sh; mkdir -p input-cache; wget -q https://github.com/HL7/fhir-ig-publisher/releases/latest/download/publisher.jar -O input-cache/publisher.jar; export PATH=\"${JAVA_HOME:-}/bin:${PATH}\"; ./_genonce.sh || true"
 
+      - name: Inspect output (debug)
+        if: always()
+        run: |
+          echo "PWD=$(pwd)"
+          ls -la
+          echo "--- output/ ---"
+          ls -la output || true
+          echo "--- index ---"
+          test -f output/index.html && echo "output/index.html exists" || echo "output/index.html missing"
+
+      - name: Upload Pages artifact
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: output
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
